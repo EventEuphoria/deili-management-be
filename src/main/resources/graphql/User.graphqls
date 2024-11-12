@@ -1,0 +1,84 @@
+type LoginResponse {
+    accessToken: String
+    userId: String
+    email: String
+    role: String
+}
+
+type User {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    phoneNumber: String
+    jobRole: JobRole
+    role: String
+}
+
+type UserProfile {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    phoneNumber: String
+    jobRole: String
+}
+
+input RegistrationRequest {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+    phoneNumber: String
+    jobRoleId: ID!
+}
+
+input UpdateProfileDto {
+    userId: ID!
+    firstName: String
+    lastName: String
+    email: String
+    currentPassword: String!
+    newPassword: String
+}
+
+type Mutation {
+    # User Authentication Mutations
+    login(email: String!, password: String!): LoginResponse
+    logout(token: String!): String
+
+    # User Management Mutations
+    registerUser(request: RegistrationRequest!): User
+    updateUserProfile(input: UpdateProfileDto!): User
+    verifyUserEmail(token: String!): String
+    requestPasswordReset(email: String!): String
+    resetPassword(email: String!, token: String!, newPassword: String!): String
+
+    # Department and Role Management Mutations
+    createDepartment(name: String!): Department
+    updateDepartment(id: ID!, name: String!): Department
+    deleteDepartment(id: ID!): String
+
+    createJobRole(title: String!, departmentId: ID!): JobRole
+    updateJobRole(id: ID!, title: String!, departmentId: ID!): JobRole
+    deleteJobRole(id: ID!): String
+}
+
+type Query {
+    getUserProfile(userId: ID!): UserProfile
+    getAllDepartments: [Department]
+    getDepartmentById(id: ID!): Department
+    getAllRoles: [JobRole]
+    getRoleById(id: ID!): JobRole
+}
+
+type Department {
+    id: ID!
+    name: String!
+}
+
+type JobRole {
+    id: ID!
+    title: String!
+    department: Department!
+}

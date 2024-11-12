@@ -1,13 +1,17 @@
-package com.deili.deilimanagement.user.Entity;
+package com.deili.deilimanagement.user.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.deili.deilimanagement.board.entity.Board;
+import com.deili.deilimanagement.card.entity.Assignee;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,11 +21,41 @@ public class User {
 
     private String lastName;
 
+    @Column(unique = true, nullable = false)
     private String email;
 
     private String phoneNumber;
 
+    @Column(nullable = false)
     private String password;
 
+    private boolean isVerified;
+
+    @OneToOne
+    @JoinColumn(name = "job_role_id", referencedColumnName = "id") // Join on the JobRole's id
+    private JobRole jobRole;
+
     private String role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Board> board;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Assignee assignee;
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime deletedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
