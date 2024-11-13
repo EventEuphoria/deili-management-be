@@ -12,9 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -28,13 +26,11 @@ public class AuthServiceImpl implements AuthService {
 
     private final JwtEncoder jwtEncoder;
     private final AuthRedisRepository authRedisRepository;
+    private final JwtDecoder jwtDecoder;
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final AuthenticationManager authenticationManager;
 
     @Override
     public LoginResponseDto generateToken(Authentication authentication) {
-
         Optional<User> userOptional = userService.findByEmail(authentication.getName());
         if (userOptional.isEmpty()) {
             throw new ResourceNotFoundException("User not found");
@@ -55,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
                 .claim("scope", scope)
                 .claim("userId", user.getId())
                 .claim("role", user.getRole())
+                .claim("isVerified", user.isVerified())
                 .build();
 
         String jwt = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
@@ -65,18 +62,28 @@ public class AuthServiceImpl implements AuthService {
 
         authRedisRepository.saveJwtKey(authentication.getName(), jwt);
 
-        return new LoginResponseDto();
+        LoginResponseDto response = new LoginResponseDto();
+        response.setAccessToken(jwt);
+        response.setUserId(String.valueOf(user.getId()));
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
+
+        return response;
     }
 
     @Override
     public void logout(String token) {
-        var claims = Claims.getClaimsFromJwt();
-        var email = (String) claims.get("sub");
+        try {
+            Jwt jwt = jwtDecoder.decode(token);
+            String email = jwt.getSubject(); // Assuming 'sub' claim contains email
 
-        if (authRedisRepository.isKeyBlacklisted(token)) {
-            throw new ResourceNotFoundException("JWT Token has already been blacklisted");
+            if (authRedisRepository.isKeyBlacklisted(token)) {
+                throw new ResourceNotFoundException("JWT Token has already been blacklisted");
+            }
+            authRedisRepository.blackListJwt(email, token);
+            authRedisRepository.deleteJwtKey(email);
+        } catch (JwtException e) {
+            throw new ResourceNotFoundException("Invalid JWT Token");
         }
-        authRedisRepository.blackListJwt(email, token);
-        authRedisRepository.deleteJwtKey(email);
     }
 }

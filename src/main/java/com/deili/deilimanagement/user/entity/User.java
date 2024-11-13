@@ -1,7 +1,8 @@
 package com.deili.deilimanagement.user.entity;
 
 import com.deili.deilimanagement.board.entity.Board;
-import com.deili.deilimanagement.card.entity.Assignee;
+import com.deili.deilimanagement.board.entity.BoardAssignee;
+import com.deili.deilimanagement.card.entity.CardAssignee;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -41,8 +42,13 @@ public class User {
     @JsonManagedReference
     private List<Board> board;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Assignee assignee;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<BoardAssignee> boardAssignees;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<CardAssignee> cardAssignees;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();

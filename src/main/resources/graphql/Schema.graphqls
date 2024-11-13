@@ -1,0 +1,45 @@
+type Query {
+    # USER QUERY
+    getUserProfile(userId: ID!): UserProfile
+    getAllDepartments: [Department]
+    getDepartmentById(id: ID!): Department
+    getAllRoles: [JobRole]
+    getRoleById(id: ID!): JobRole
+
+    # BOARD QUERY
+    getAllBoards: [BoardDTO!]!
+    getBoardById(id: ID!): BoardDTO
+}
+
+type Mutation {
+    # USER MUTATION
+    # User Authentication Mutations
+    login(email: String!, password: String!): LoginResponse
+    logout(token: String!): String
+
+    # User Management Mutations
+    registerUser(request: RegistrationRequest!): User
+    updateUserProfile(input: UpdateProfileDto!): User
+    verifyUserEmail(token: String!): String
+    requestPasswordReset(email: String!): String
+    resetPassword(email: String!, token: String!, newPassword: String!): String
+
+    # Department and Role Management Mutations
+    createDepartment(name: String!): Department
+    updateDepartment(id: ID!, name: String!): Department
+    deleteDepartment(id: ID!): String
+
+    createJobRole(title: String!, departmentId: ID!): JobRole
+    updateJobRole(id: ID!, title: String!, departmentId: ID!): JobRole
+    deleteJobRole(id: ID!): String
+
+    # BOARD MUTATION
+    createBoard(boardRequestDTO: BoardRequestDTO!): BoardDTO!
+    updateBoard(id: ID!, boardRequestDTO: BoardRequestDTO!): BoardDTO!
+    deleteBoard(id: ID!): Boolean!
+
+    # Board Assignee and Role Management Mutations
+    inviteUserToBoard(boardId: ID!, userId: ID!, role: BoardRole!): String!
+    updateBoardRole(boardId: ID!, userId: ID!, role: BoardRole!): String!
+    removeBoardAssignee(boardId: ID!, userId: ID!): String!
+}

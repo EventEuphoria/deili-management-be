@@ -38,7 +38,7 @@ public class Card {
 
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Assignee> assignees;
+    private List<CardAssignee> cardAssignees;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();

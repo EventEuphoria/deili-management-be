@@ -1,0 +1,31 @@
+type BoardDTO {
+    id: ID!
+    boardName: String!
+    boardDesc: String
+    isComplete: Boolean!
+    assignees: [AssigneeDTO!]! # List of assignees on the board
+}
+
+type AssigneeDTO {
+    userId: ID!
+    userName: String!
+    role: BoardRole!
+}
+
+input BoardRequestDTO {
+    boardName: String!
+    boardDesc: String
+    isComplete: Boolean
+    userId: ID! # Optional list of assignees for initial setup
+}
+
+input AssigneeRequest {
+    userId: ID!
+    boardRole: BoardRole!
+}
+
+enum BoardRole {
+    OWNER
+    EDITOR
+    READ_ONLY
+}

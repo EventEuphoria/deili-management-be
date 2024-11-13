@@ -27,7 +27,7 @@ public class UserController {
     }
 
     @MutationMapping
-    public User updateUserProfile(@Argument UpdateProfileDto updateProfileDto) {
+    public User updateUserProfile(@Argument("input") UpdateProfileDto updateProfileDto) {
         return userService.updateUserProfile(updateProfileDto);
     }
 

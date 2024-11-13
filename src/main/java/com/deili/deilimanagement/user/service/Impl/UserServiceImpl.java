@@ -37,7 +37,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public User registerUser(RegistrationRequest request) {
         try {
-
             User user = new User();
             user.setFirstName(request.getFirstName());
             user.setLastName(request.getLastName());
@@ -87,7 +86,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(updateProfileDto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (!passwordEncoder.matches(updateProfileDto.getCurrentPassword(), user.getPassword())) {
+        boolean passwordMatches = passwordEncoder.matches(updateProfileDto.getCurrentPassword(), user.getPassword());
+        log.info("Password match result for user {}: {}", updateProfileDto.getUserId(), passwordMatches);
+
+        if (!passwordMatches) {
             throw new IllegalArgumentException("Incorrect current password.");
         }
 
@@ -97,9 +99,19 @@ public class UserServiceImpl implements UserService {
 
         user.setFirstName(updateProfileDto.getFirstName());
         user.setLastName(updateProfileDto.getLastName());
+
         if (!user.getEmail().equalsIgnoreCase(updateProfileDto.getEmail())) {
             user.setEmail(updateProfileDto.getEmail().toLowerCase());
+            user.setVerified(false);
             sendVerificationEmail(user);
+        }
+
+        user.setPhoneNumber(updateProfileDto.getPhoneNumber());
+
+        if (updateProfileDto.getJobRoleId() != null) {
+            JobRole jobRole = jobRoleRepository.findById(updateProfileDto.getJobRoleId())
+                    .orElseThrow(() -> new IllegalArgumentException("Job Role not found"));
+            user.setJobRole(jobRole);
         }
 
         return userRepository.save(user);
@@ -113,7 +125,7 @@ public class UserServiceImpl implements UserService {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(user.getEmail());
         mailMessage.setSubject("Verify Your Email");
-        mailMessage.setText("Please verify your email using the following link (expires in 1 hour): " + verificationLink);
+        mailMessage.setText("Hello " + user.getFirstName() + user.getLastName() +"! Welcome to Deili Management. Please verify your email using the following link (expires in 1 hour): " + verificationLink);
 
         mailSender.send(mailMessage);
     }
@@ -121,7 +133,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void verifyUserEmail(String token) {
         try {
-            // Log incoming token for debugging purposes
             log.info("Verifying user email with token: {}", token);
 
             String[] tokenData = decodeToken(token);
@@ -162,12 +173,12 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String token = generateToken(user);
-        String resetLink = "https://yourdomain.com/reset-password?token=" + token;
+        String resetLink = "https://localhost:3000/reset-password?token=" + token;
 
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(user.getEmail());
         mailMessage.setSubject("Password Reset Request");
-        mailMessage.setText("Click the link to reset your password: " + resetLink);
+        mailMessage.setText("Are you request to reset password? If so, please click the link to reset your password: " + resetLink + ". If not please ignore this message.");
 
         mailSender.send(mailMessage);
     }

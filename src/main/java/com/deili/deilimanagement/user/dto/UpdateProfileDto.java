@@ -8,7 +8,8 @@ public class UpdateProfileDto {
     private String firstName;
     private String lastName;
     private String email;
+    private String phoneNumber;
     private String currentPassword;
     private String newPassword;
-    private String jobRole;
+    private Long jobRoleId;
 }

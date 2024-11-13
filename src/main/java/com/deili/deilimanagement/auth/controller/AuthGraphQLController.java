@@ -31,7 +31,13 @@ public class AuthGraphQLController {
 
     @MutationMapping
     public String logout(@Argument String token) {
-        authService.logout(token);
-        return "Logout successful";
+        try {
+            authService.logout(token);
+            return "Logout successful";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Logout failed: " + e.getMessage();
+        }
     }
+
 }
