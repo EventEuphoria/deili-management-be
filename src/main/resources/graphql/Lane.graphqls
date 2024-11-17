@@ -1,0 +1,14 @@
+type LaneDTO{
+    id: ID!
+    laneName: String!
+    laneDesc: String
+    boardId: ID!
+    position: Int!
+}
+
+input LaneInputDTO {
+    laneName: String!
+    laneDesc: String
+    boardId: ID!
+    position: Int
+}

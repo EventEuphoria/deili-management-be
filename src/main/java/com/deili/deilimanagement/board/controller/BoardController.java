@@ -44,17 +44,32 @@ public class BoardController {
     }
 
     @MutationMapping
-    public void inviteUserToBoard(@Argument Long boardId, @Argument Long userId, @Argument BoardRole role){
-        boardService.inviteUserToBoard(boardId, userId, role);
+    public String inviteUserToBoard(@Argument Long boardId, @Argument Long userId, @Argument BoardRole role) {
+        try {
+            boardService.inviteUserToBoard(boardId, userId, role);
+            return "User invited successfully";
+        } catch (Exception e) {
+            throw new RuntimeException("Error inviting user to the board: " + e.getMessage());
+        }
     }
 
     @MutationMapping
-    public void updateBoardRole(@Argument Long boardId, @Argument Long userId, @Argument BoardRole role){
-        boardService.updateBoardRole(boardId, userId, role);
+    public String updateBoardRole(@Argument Long boardId, @Argument Long userId, @Argument BoardRole role) {
+        try {
+            boardService.updateBoardRole(boardId, userId, role);
+            return "Board role updated successfully"; // Return a success message
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating board role: " + e.getMessage());
+        }
     }
 
     @MutationMapping
-    public void removeBoardAssignee(@Argument Long boardId, @Argument Long userId){
-        boardService.removeBoardAssignee(boardId, userId);
+    public String removeBoardAssignee(@Argument Long boardId, @Argument Long userId) {
+        try {
+            boardService.removeBoardAssignee(boardId, userId);
+            return "Assignee removed successfully"; // Return a success message
+        } catch (Exception e) {
+            throw new RuntimeException("Error removing assignee: " + e.getMessage());
+        }
     }
 }

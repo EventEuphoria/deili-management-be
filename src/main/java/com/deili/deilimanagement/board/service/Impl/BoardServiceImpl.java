@@ -107,10 +107,10 @@ public class BoardServiceImpl implements BoardService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
 
         boolean isAlreadyAssignee = board.getBoardAssignees().stream()
-                .anyMatch(boardAssignee -> boardAssignee.getUser().getId().equals(user));
+                .anyMatch(boardAssignee -> boardAssignee.getUser().getId().equals(userId));
 
-        if(isAlreadyAssignee){
-            throw new IllegalArgumentException("User is already on assignee on this board");
+        if (isAlreadyAssignee) {
+            throw new IllegalArgumentException("User is already an assignee on this board");
         }
 
         BoardAssignee assignee = new BoardAssignee();

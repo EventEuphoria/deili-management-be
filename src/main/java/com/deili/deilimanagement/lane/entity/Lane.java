@@ -14,6 +14,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "lane")
+
 public class Lane {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +32,8 @@ public class Lane {
     @JoinColumn(name = "board_id", nullable = false)
     @JsonBackReference
     private Board board;
+
+    private int position;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 

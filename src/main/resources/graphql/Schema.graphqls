@@ -9,6 +9,11 @@ type Query {
     # BOARD QUERY
     getAllBoards: [BoardDTO!]!
     getBoardById(id: ID!): BoardDTO
+
+    # LANE QUERY
+    getAllLanes: [LaneDTO]!
+    getLaneById(id: ID!): LaneDTO
+    getLanesByBoard(boardId: ID!): [LaneDTO]!
 }
 
 type Mutation {
@@ -42,4 +47,10 @@ type Mutation {
     inviteUserToBoard(boardId: ID!, userId: ID!, role: BoardRole!): String!
     updateBoardRole(boardId: ID!, userId: ID!, role: BoardRole!): String!
     removeBoardAssignee(boardId: ID!, userId: ID!): String!
+
+    # LANE MUTATION
+    createLane(laneDto: LaneInputDTO!): LaneDTO!
+    updateLane(laneId: ID!, laneDto: LaneInputDTO!): LaneDTO!
+    deleteLane(laneId: ID!): Boolean!
+    reorderLanes(boardId: ID!, laneIds: [ID!]!): Boolean!
 }
