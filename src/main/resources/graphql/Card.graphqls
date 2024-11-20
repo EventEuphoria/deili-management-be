@@ -1,0 +1,81 @@
+type CardDto{
+    id: ID!
+    cardName: String!
+    cardDesc: String
+    dueDate: String
+    position: Int
+    laneId: ID!
+}
+
+input CardInput{
+    cardName: String!
+    cardDesc: String
+    laneId: ID!
+}
+
+# Card Assignee Types and Inputs
+type CardAssigneeDto {
+    id: ID!
+    cardId: ID!
+    userId: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    jobRole: String!
+}
+
+input CardAssigneeInput {
+    cardId: ID!
+    userId: ID!
+}
+
+# Label Types and Inputs
+type LabelDto {
+    id: ID!
+    cardId: ID!
+    labelItems: [LabelItemDto!]!
+}
+
+type LabelItemDto {
+    id: ID!
+    labelName: String!
+}
+
+input LabelInput {
+    cardId: ID!
+    labelName: String!
+}
+
+input LabelUpdateInput {
+    labelId: ID!
+    labelName: String!
+}
+
+# Checklist Types and Inputs
+type ChecklistDto {
+    id: ID!
+    cardId: ID!
+    checklistItems: [ChecklistItemDto!]!
+}
+
+type ChecklistItemDto {
+    id: ID!
+    checklistId: ID!
+    content: String!
+    status: Boolean!
+}
+
+input ChecklistInput {
+    cardId: ID!
+}
+
+input ChecklistItemInput {
+    checklistId: ID!
+    content: String!
+}
+
+input ChecklistItemUpdateInput {
+    checklistItemId: ID!
+    content: String
+    status: Boolean
+}

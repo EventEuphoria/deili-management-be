@@ -14,6 +14,24 @@ type Query {
     getAllLanes: [LaneDTO]!
     getLaneById(id: ID!): LaneDTO
     getLanesByBoard(boardId: ID!): [LaneDTO]!
+
+    # CARD QUERY
+    getAllCards: [CardDto!]!
+    getCardById(cardId: ID!): CardDto
+    getCardsByLane(laneId: ID!): [CardDto!]!
+
+    # CARD ASSIGNEE QUERY
+    getAssigneesByCard(cardId: ID!): [CardAssigneeDto!]!
+    getAssigneeById(assigneeId: ID!): CardAssigneeDto!
+
+    # LABEL QUERY
+    getLabelsByCard(cardId: ID!): [LabelDto!]!
+    getLabelById(labelId: ID!): LabelDto!
+
+    # CHECKLIST QUERY
+    getChecklistsByCard(cardId: ID!): [ChecklistDto!]!
+    getChecklistById(checklistId: ID!): ChecklistDto!
+    getChecklistItemById(checklistItemId: ID!): ChecklistItemDto!
 }
 
 type Mutation {
@@ -53,4 +71,27 @@ type Mutation {
     updateLane(laneId: ID!, laneDto: LaneInputDTO!): LaneDTO!
     deleteLane(laneId: ID!): Boolean!
     reorderLanes(boardId: ID!, laneIds: [ID!]!): Boolean!
+
+    # CARD MUTATION
+    createCard(cardInput: CardInput!): CardDto!
+    updateCard(cardId: ID!, cardInput: CardInput!): CardDto!
+    updateDueDate(cardId: ID!, dueDate: String!): CardDto!
+    deleteCard(cardId: ID!): Boolean!
+    reorderCardsInLane(laneId: ID!, cardIds: [ID!]!): Boolean!
+    moveCardToLane(cardId: ID!, targetLaneId: ID!, newPosition: Int!): Boolean!
+
+    # CARD ASSIGNEE MUTATION
+    addAssigneeToCard(input: CardAssigneeInput!): CardAssigneeDto!
+    removeAssigneeFromCard(cardAssigneeId: ID!): Boolean!
+
+    # LABEL MUTATION
+    addLabelToCard(input: LabelInput!): LabelDto!
+    updateLabel(input: LabelUpdateInput!): LabelDto!
+    removeLabel(labelId: ID!): Boolean!
+
+    # CHECKLIST MUTATION
+    addChecklistToCard(input: ChecklistInput!): ChecklistDto!
+    addChecklistItem(input: ChecklistItemInput!): ChecklistItemDto!
+    updateChecklistItem(input: ChecklistItemUpdateInput!): ChecklistItemDto!
+    removeChecklistItem(checklistItemId: ID!): Boolean!
 }

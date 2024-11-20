@@ -50,10 +50,10 @@ public class LaneController {
     public boolean reorderLanes(@Argument Long boardId, @Argument List<Long> laneIds) {
         try {
             laneService.reorderLanes(boardId, laneIds);
-            return true; // Return true if operation succeeds
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false; // Return false if an exception occurs
+            return false;
         }
     }
 }

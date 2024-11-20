@@ -22,8 +22,6 @@ public class Lane {
 
     private String laneName;
 
-    private String laneDesc;
-
     @OneToMany(mappedBy = "lane", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Card> card;

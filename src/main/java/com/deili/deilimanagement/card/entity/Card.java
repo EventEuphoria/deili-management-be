@@ -23,6 +23,8 @@ public class Card {
 
     private LocalDateTime dueDate;
 
+    private Long position;
+
     @ManyToOne
     @JoinColumn(name = "lane_id", nullable = false)
     @JsonBackReference

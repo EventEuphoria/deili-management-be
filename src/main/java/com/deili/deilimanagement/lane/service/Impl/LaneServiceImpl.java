@@ -28,7 +28,6 @@ public class LaneServiceImpl implements LaneService {
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found by Id "+laneDto.getBoardId()));
         Lane lane = new Lane();
         lane.setLaneName(laneDto.getLaneName());
-        lane.setLaneDesc(laneDto.getLaneDesc());
         lane.setBoard(board);
 
         int maxPosition = board.getLane().stream()
@@ -47,7 +46,6 @@ public class LaneServiceImpl implements LaneService {
         Lane lane = laneRepository.findById(laneId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lane not found with id "+laneId));
         lane.setLaneName(laneDto.getLaneName());
-        lane.setLaneDesc(laneDto.getLaneDesc());
         laneRepository.save(lane);
         laneDto.setId(lane.getId());
         return laneDto;
@@ -67,7 +65,6 @@ public class LaneServiceImpl implements LaneService {
             LaneDto laneDto = new LaneDto();
             laneDto.setId(lane.getId());
             laneDto.setLaneName(lane.getLaneName());
-            laneDto.setLaneDesc(lane.getLaneDesc());
             laneDto.setBoardId(lane.getBoard().getId());
             laneDto.setPosition(lane.getPosition());
             return laneDto;
@@ -77,23 +74,19 @@ public class LaneServiceImpl implements LaneService {
     @Override
     @Transactional
     public boolean reorderLanes(Long boardId, List<Long> laneIds) {
-        // Fetch all lanes for the given board
         List<Lane> lanes = laneRepository.findByBoardId(boardId);
 
         if (lanes.isEmpty()) {
             throw new ResourceNotFoundException("No lanes found for board ID: " + boardId);
         }
 
-        // Create a map of lane IDs to Lane entities
         Map<Long, Lane> laneMap = lanes.stream()
                 .collect(Collectors.toMap(Lane::getId, lane -> lane));
 
-        // Step 1: Increment all positions to avoid constraint violation
         lanes.forEach(lane -> lane.setPosition(lane.getPosition() + lanes.size()));
-        laneRepository.saveAll(lanes); // Persist temporary positions
-        laneRepository.flush(); // Ensure changes are written to the database
+        laneRepository.saveAll(lanes);
+        laneRepository.flush();
 
-        // Step 2: Assign new positions based on the provided laneIds order
         for (int i = 0; i < laneIds.size(); i++) {
             Long laneId = laneIds.get(i);
             Lane lane = laneMap.get(laneId);
@@ -102,14 +95,12 @@ public class LaneServiceImpl implements LaneService {
                 throw new IllegalArgumentException("Invalid lane ID: " + laneId);
             }
 
-            lane.setPosition(i); // Set the new position
+            lane.setPosition(i);
         }
 
-        // Step 3: Persist the final positions
         laneRepository.saveAll(laneMap.values());
-        laneRepository.flush(); // Ensure changes are written to the database
-
-        return true; // Reordering was successful
+        laneRepository.flush();
+        return true;
     }
 
     @Override
@@ -129,7 +120,6 @@ public class LaneServiceImpl implements LaneService {
         LaneDto laneDto = new LaneDto();
         laneDto.setId(lane.getId());
         laneDto.setLaneName(lane.getLaneName());
-        laneDto.setLaneDesc(lane.getLaneDesc());
         laneDto.setBoardId(lane.getBoard().getId());
         laneDto.setPosition(lane.getPosition());
         return laneDto;
