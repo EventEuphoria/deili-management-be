@@ -50,6 +50,7 @@ public class AuthServiceImpl implements AuthService {
                 .subject(authentication.getName())
                 .claim("scope", scope)
                 .claim("userId", user.getId())
+                .claim("jobRole", user.getJobRole().getTitle())
                 .claim("role", user.getRole())
                 .claim("isVerified", user.isVerified())
                 .build();

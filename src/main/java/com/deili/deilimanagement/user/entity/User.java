@@ -3,6 +3,7 @@ package com.deili.deilimanagement.user.entity;
 import com.deili.deilimanagement.board.entity.Board;
 import com.deili.deilimanagement.board.entity.BoardAssignee;
 import com.deili.deilimanagement.card.entity.CardAssignee;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -32,8 +33,8 @@ public class User {
 
     private boolean isVerified;
 
-    @OneToOne
-    @JoinColumn(name = "job_role_id", referencedColumnName = "id") // Join on the JobRole's id
+    @ManyToOne
+    @JoinColumn(name = "job_role_id", referencedColumnName = "id")
     private JobRole jobRole;
 
     private String role;

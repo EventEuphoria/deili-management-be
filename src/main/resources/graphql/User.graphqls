@@ -3,6 +3,8 @@ type LoginResponse {
     userId: String
     email: String
     role: String
+    jobRole: String
+    isVerified: Boolean
 }
 
 type User {

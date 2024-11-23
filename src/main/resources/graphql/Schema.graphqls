@@ -5,6 +5,7 @@ type Query {
     getDepartmentById(id: ID!): Department
     getAllRoles: [JobRole]
     getRoleById(id: ID!): JobRole
+    getRolesByDepartment(departmentId: ID!): [JobRole]
 
     # BOARD QUERY
     getAllBoards: [BoardDTO!]!

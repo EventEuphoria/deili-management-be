@@ -2,22 +2,25 @@ package com.deili.deilimanagement.user.controller;
 
 import com.deili.deilimanagement.user.entity.Department;
 import com.deili.deilimanagement.user.entity.JobRole;
+import com.deili.deilimanagement.user.repository.DepartmentRepository;
+import com.deili.deilimanagement.user.repository.JobRoleRepository;
 import com.deili.deilimanagement.user.service.RoleService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
+@RequiredArgsConstructor
 public class RoleController {
 
     private final RoleService roleService;
-
-    public RoleController(RoleService roleService) {
-        this.roleService = roleService;
-    }
+    private final JobRoleRepository jobRoleRepository;
+    private final DepartmentRepository departmentRepository;
 
     @QueryMapping
     public List<Department> getAllDepartments() {
@@ -53,6 +56,18 @@ public class RoleController {
     @QueryMapping
     public JobRole getRoleById(@Argument Long id) {
         return roleService.getRoleById(id);
+    }
+
+    @QueryMapping
+    public List<JobRole> getRolesByDepartment(@Argument Long departmentId) {
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Department not found"));
+
+        List<JobRole> roles = jobRoleRepository.findAllByDepartment(department);
+
+        return roles.stream()
+                .filter(role -> role.getId() != null && role.getTitle() != null && role.getDepartment() != null)
+                .collect(Collectors.toList());
     }
 
     @MutationMapping
