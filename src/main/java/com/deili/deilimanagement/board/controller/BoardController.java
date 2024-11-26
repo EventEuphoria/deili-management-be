@@ -28,6 +28,11 @@ public class BoardController {
     }
 
     @MutationMapping
+    public BoardDto toggleBoardCompletion(@Argument Long id) {
+        return boardService.toggleBoardCompletion(id);
+    }
+
+    @MutationMapping
     public Boolean deleteBoard(@Argument Long id){
         boardService.deleteBoard(id);
         return true;
@@ -36,6 +41,11 @@ public class BoardController {
     @QueryMapping
     public List<BoardDto> getAllBoards(){
         return boardService.getAllBoards();
+    }
+
+    @QueryMapping
+    public List<BoardDto> getBoardByUser(@Argument Long userId){
+        return boardService.getBoardByUser(userId);
     }
 
     @QueryMapping
@@ -54,10 +64,16 @@ public class BoardController {
     }
 
     @MutationMapping
+    public String respondToInvitation(@Argument Long boardId, @Argument Long userId, @Argument boolean accept) {
+        boardService.respondToInvitation(boardId, userId, accept);
+        return accept ? "Invitation accepted" : "Invitation rejected";
+    }
+
+    @MutationMapping
     public String updateBoardRole(@Argument Long boardId, @Argument Long userId, @Argument BoardRole role) {
         try {
             boardService.updateBoardRole(boardId, userId, role);
-            return "Board role updated successfully"; // Return a success message
+            return "Board role updated successfully";
         } catch (Exception e) {
             throw new RuntimeException("Error updating board role: " + e.getMessage());
         }

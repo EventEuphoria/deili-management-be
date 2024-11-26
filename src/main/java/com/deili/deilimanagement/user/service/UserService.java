@@ -13,6 +13,7 @@ public interface UserService {
     UserProfileDto getUserProfile(Long userId);
     User updateUserProfile(UpdateProfileDto updateProfileDto);
     void sendVerificationEmail(User user);
+    void resendVerificationEmail(Long userId);
     void verifyUserEmail(String token);
     void requestPasswordReset(String email);
     void resetPassword(String email, String token, String newPassword);

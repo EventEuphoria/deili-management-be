@@ -6,6 +6,7 @@ import com.deili.deilimanagement.board.dto.BoardRequestDto;
 import com.deili.deilimanagement.board.entity.Board;
 import com.deili.deilimanagement.board.entity.BoardAssignee;
 import com.deili.deilimanagement.board.entity.enums.BoardRole;
+import com.deili.deilimanagement.board.entity.enums.InvitationStatus;
 import com.deili.deilimanagement.board.repository.BoardRepository;
 import com.deili.deilimanagement.board.service.BoardService;
 import com.deili.deilimanagement.exception.ResourceNotFoundException;
@@ -33,7 +34,7 @@ public class BoardServiceImpl implements BoardService {
         Board board = new Board();
         board.setBoardName(boardRequestDTO.getBoardName());
         board.setBoardDesc(boardRequestDTO.getBoardDesc());
-        board.setComplete(boardRequestDTO.isComplete());
+        board.setComplete(boardRequestDTO.getIsComplete());
         board.setUser(user);
         board.setRole(BoardRole.OWNER);
 
@@ -41,7 +42,7 @@ public class BoardServiceImpl implements BoardService {
         ownerAssignee.setBoard(board);
         ownerAssignee.setUser(user);
         ownerAssignee.setRole(BoardRole.OWNER);
-
+        ownerAssignee.setStatus(InvitationStatus.ACCEPTED);
         List<BoardAssignee> assignees = new ArrayList<>();
         assignees.add(ownerAssignee);
         board.setBoardAssignees(assignees);
@@ -51,32 +52,33 @@ public class BoardServiceImpl implements BoardService {
         return mapToDTO(board);
     }
 
-
     @Override
     public BoardDto updateBoard(Long id, BoardRequestDto boardRequestDTO) {
         Board board = boardRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Board not found with id"+id));
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found with id " + id));
 
-        boolean isUpdated = false;
-        if (boardRequestDTO.getBoardName() != null && !board.getBoardName().equals(boardRequestDTO.getBoardName())) {
+        if (boardRequestDTO.getBoardName() != null) {
             board.setBoardName(boardRequestDTO.getBoardName());
-            isUpdated = true;
         }
 
-        if (boardRequestDTO.getBoardDesc() != null && !board.getBoardDesc().equals(boardRequestDTO.getBoardDesc())) {
+        if (boardRequestDTO.getBoardDesc() != null) {
             board.setBoardDesc(boardRequestDTO.getBoardDesc());
-            isUpdated = true;
         }
 
-        if (boardRequestDTO.isComplete() != board.isComplete()) {
-            board.setComplete(boardRequestDTO.isComplete());
-            isUpdated = true;
+        if (boardRequestDTO.getIsComplete() != board.isComplete()) {
+            board.setComplete(boardRequestDTO.getIsComplete());
         }
+        boardRepository.save(board);
+        return mapToDTO(board);
+    }
 
-        if (isUpdated) {
-            boardRepository.save(board);
-        }
+    @Override
+    public BoardDto toggleBoardCompletion(Long id) {
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found with id " + id));
+        board.setComplete(!board.isComplete());
 
+        boardRepository.save(board);
         return mapToDTO(board);
     }
 
@@ -90,6 +92,31 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public List<BoardDto> getAllBoards() {
         return boardRepository.findAll().stream().map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BoardDto> getBoardByUser(Long userId){
+        List<Board> boards = boardRepository.findByUserId(userId);
+
+        return boards.stream().map(board -> {
+            BoardDto boardDto = new BoardDto();
+            boardDto.setId(board.getId());
+            boardDto.setBoardName(board.getBoardName());
+            boardDto.setBoardDesc(board.getBoardDesc());
+            boardDto.setComplete(board.isComplete());
+            List<AssigneeDto> assigneeDtos = board.getBoardAssignees().stream().map(assignee -> {
+                AssigneeDto assigneeDto = new AssigneeDto();
+                assigneeDto.setUserId(assignee.getUser().getId());
+                assigneeDto.setUserName(assignee.getUser().getFirstName() + " " + assignee.getUser().getLastName());
+                assigneeDto.setRole(assignee.getRole());
+                assigneeDto.setEmail(assignee.getUser().getEmail());
+                assigneeDto.setStatus(assignee.getStatus());
+                return assigneeDto;
+            }).collect(Collectors.toList());
+            boardDto.setAssignees(assigneeDtos);
+
+            return boardDto;
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -117,8 +144,30 @@ public class BoardServiceImpl implements BoardService {
         assignee.setBoard(board);
         assignee.setUser(user);
         assignee.setRole(role);
+        assignee.setStatus(InvitationStatus.PENDING);
 
         board.getBoardAssignees().add(assignee);
+        boardRepository.save(board);
+    }
+
+    @Override
+    public void respondToInvitation(Long boardId, Long userId, boolean accept) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found with id " + boardId));
+
+        BoardAssignee assignee = board.getBoardAssignees().stream()
+                .filter(a -> a.getUser().getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("No pending invitation found for this user"));
+        if (assignee.getStatus() != InvitationStatus.PENDING) {
+            throw new IllegalArgumentException("Invitation has already been responded to");
+        }
+        if (accept) {
+            assignee.setStatus(InvitationStatus.ACCEPTED);
+        } else {
+            assignee.setStatus(InvitationStatus.REJECTED);
+        }
+
         boardRepository.save(board);
     }
 
@@ -150,7 +199,6 @@ public class BoardServiceImpl implements BoardService {
         }
 
         board.getBoardAssignees().remove(assignee);
-
         assignee.getUser().getCardAssignees().removeIf(cardAssignee ->
                 cardAssignee.getCard().getLane().getBoard().getId().equals(boardId));
         boardRepository.save(board);
@@ -163,7 +211,6 @@ public class BoardServiceImpl implements BoardService {
         dto.setBoardDesc(board.getBoardDesc());
         dto.setComplete(board.isComplete());
 
-        // Create an empty list if boardAssignees is null or empty
         List<AssigneeDto> assigneeDtos = board.getBoardAssignees() != null
                 ? board.getBoardAssignees().stream()
                 .map(assignee -> {
@@ -171,12 +218,13 @@ public class BoardServiceImpl implements BoardService {
                     assigneeDto.setUserId(assignee.getUser().getId());
                     assigneeDto.setUserName(assignee.getUser().getFirstName() + " " + assignee.getUser().getLastName());
                     assigneeDto.setRole(assignee.getRole());
+                    assigneeDto.setEmail(assignee.getUser().getEmail());
+                    assigneeDto.setStatus(assignee.getStatus() != null ? assignee.getStatus() : InvitationStatus.PENDING);
                     return assigneeDto;
                 })
                 .collect(Collectors.toList())
-                : new ArrayList<>(); // Empty list instead of null
-
-        dto.setAssignees(assigneeDtos); // Always set a non-null list
+                : new ArrayList<>();
+        dto.setAssignees(assigneeDtos);
         return dto;
     }
 }

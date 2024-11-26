@@ -1,6 +1,7 @@
 package com.deili.deilimanagement.board.entity;
 
 import com.deili.deilimanagement.board.entity.enums.BoardRole;
+import com.deili.deilimanagement.board.entity.enums.InvitationStatus;
 import com.deili.deilimanagement.card.entity.Card;
 import com.deili.deilimanagement.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -27,4 +28,8 @@ public class BoardAssignee {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BoardRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private InvitationStatus status = InvitationStatus.PENDING;
 }

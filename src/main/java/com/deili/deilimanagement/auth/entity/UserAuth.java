@@ -52,9 +52,4 @@ public class UserAuth implements UserDetails {
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
-    @Override
-    public boolean isEnabled() {
-        return user.isVerified();
-    }
 }

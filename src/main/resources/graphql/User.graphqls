@@ -24,6 +24,7 @@ type UserProfile {
     email: String!
     phoneNumber: String
     jobRole: String
+    isVerified: Boolean
 }
 
 input RegistrationRequest {

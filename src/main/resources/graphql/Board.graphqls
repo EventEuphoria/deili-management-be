@@ -3,20 +3,28 @@ type BoardDTO {
     boardName: String!
     boardDesc: String
     isComplete: Boolean!
-    assignees: [AssigneeDTO!]! # List of assignees on the board
+    assignees: [AssigneeDTO!]!
+}
+
+enum InvitationStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
 }
 
 type AssigneeDTO {
     userId: ID!
     userName: String!
     role: BoardRole!
+    email: String!
+    status: InvitationStatus!
 }
 
 input BoardRequestDTO {
-    boardName: String!
+    boardName: String
     boardDesc: String
     isComplete: Boolean
-    userId: ID! # Optional list of assignees for initial setup
+    userId: ID
 }
 
 input AssigneeRequest {

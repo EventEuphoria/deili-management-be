@@ -9,6 +9,7 @@ type Query {
 
     # BOARD QUERY
     getAllBoards: [BoardDTO!]!
+    getBoardByUser(userId: ID!): [BoardDTO!]!
     getBoardById(id: ID!): BoardDTO
 
     # LANE QUERY
@@ -44,6 +45,7 @@ type Mutation {
     # User Management Mutations
     registerUser(request: RegistrationRequest!): User
     updateUserProfile(input: UpdateProfileDto!): User
+    resendVerificationEmail(userId: ID!): String
     verifyUserEmail(token: String!): String
     requestPasswordReset(email: String!): String
     resetPassword(email: String!, token: String!, newPassword: String!): String
@@ -59,11 +61,13 @@ type Mutation {
 
     # BOARD MUTATION
     createBoard(boardRequestDTO: BoardRequestDTO!): BoardDTO!
-    updateBoard(id: ID!, boardRequestDTO: BoardRequestDTO!): BoardDTO!
+    updateBoard(id: ID!, boardRequestDTO: BoardRequestDTO): BoardDTO!
     deleteBoard(id: ID!): Boolean!
+    toggleBoardCompletion(id: ID!): BoardDTO
 
     # Board Assignee and Role Management Mutations
     inviteUserToBoard(boardId: ID!, userId: ID!, role: BoardRole!): String!
+    respondToInvitation(boardId: ID!, userId: ID!, accept: Boolean!): String!
     updateBoardRole(boardId: ID!, userId: ID!, role: BoardRole!): String!
     removeBoardAssignee(boardId: ID!, userId: ID!): String!
 

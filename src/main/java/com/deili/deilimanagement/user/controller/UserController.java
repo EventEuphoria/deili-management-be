@@ -32,11 +32,16 @@ public class UserController {
     }
 
     @MutationMapping
+    public String resendVerificationEmail(@Argument Long userId) {
+        userService.resendVerificationEmail(userId);
+        return "Verification email has been resent.";
+    }
+
+    @MutationMapping
     public String verifyUserEmail(@Argument String token) {
         userService.verifyUserEmail(token);
         return "Email verified successfully.";
     }
-
 
     @MutationMapping
     public String requestPasswordReset(@Argument String email) {

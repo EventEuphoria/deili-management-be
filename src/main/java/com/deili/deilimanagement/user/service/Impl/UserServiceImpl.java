@@ -77,6 +77,7 @@ public class UserServiceImpl implements UserService {
         userProfileDto.setEmail(user.getEmail());
         userProfileDto.setPhoneNumber(user.getPhoneNumber());
         userProfileDto.setJobRole(user.getJobRole() != null ? user.getJobRole().getTitle() : null);
+        userProfileDto.setIsVerified(user.isVerified());
 
         return userProfileDto;
     }
@@ -120,7 +121,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void sendVerificationEmail(User user) {
         String token = generateToken(user);
-        String verificationLink = "https://localhost:3000/?token=" + token;
+        String verificationLink = "http://localhost:3000/verify-email?token=" + token;
 
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(user.getEmail());
@@ -131,39 +132,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void resendVerificationEmail(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.isVerified()) {
+            throw new IllegalArgumentException("User is already verified.");
+        }
+
+        sendVerificationEmail(user);
+    }
+
+    @Override
     public void verifyUserEmail(String token) {
         try {
-            log.info("Verifying user email with token: {}", token);
-
             String[] tokenData = decodeToken(token);
             String email = tokenData[1];
             Instant expiryDate = Instant.parse(tokenData[2]);
 
-            log.info("Token details - Email: {}, Expiry Date: {}", email, expiryDate);
-
             if (Instant.now().isAfter(expiryDate)) {
-                log.error("Token expired for email: {}", email);
                 throw new IllegalArgumentException("Token expired. Please request a new verification link.");
             }
 
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-            log.info("Found user with email: {}", user.getEmail());
-
             if (user.isVerified()) {
-                log.info("User is already verified: {}", user.getEmail());
                 throw new IllegalArgumentException("User is already verified.");
             }
 
             user.setVerified(true);
             userRepository.save(user);
-
-            log.info("User email verified successfully: {}", user.getEmail());
-
         } catch (Exception e) {
-            log.error("Error verifying email with token: {}", token, e);
-            throw e; // rethrow to preserve the exception
+            throw e;
         }
     }
 
@@ -173,12 +174,12 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String token = generateToken(user);
-        String resetLink = "https://localhost:3000/reset-password?token=" + token;
+        String resetLink = "http://localhost:3000/reset-password?token=" + token;
 
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(user.getEmail());
         mailMessage.setSubject("Password Reset Request");
-        mailMessage.setText("Are you request to reset password? If so, please click the link to reset your password: " + resetLink + ". If not please ignore this message.");
+        mailMessage.setText("Deili Management asking to reset password. Are you request to reset password? If so, please click the link to reset your password: " + resetLink + ". If not please ignore this message.");
 
         mailSender.send(mailMessage);
     }
