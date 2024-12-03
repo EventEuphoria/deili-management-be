@@ -9,13 +9,13 @@ import com.deili.deilimanagement.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +32,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email.toLowerCase());
+    }
+
+    @Override
+    public List<User> searchUserByEmail(String email) {
+        return userRepository.searchByEmailList(email);
+    }
+
+    @Override
+    public List<User> getAllUser(){
+        return userRepository.findAll();
     }
 
     @Override
@@ -63,7 +73,6 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
     }
-
 
     @Override
     public UserProfileDto getUserProfile(Long userId) {
@@ -106,7 +115,6 @@ public class UserServiceImpl implements UserService {
             user.setVerified(false);
             sendVerificationEmail(user);
         }
-
         user.setPhoneNumber(updateProfileDto.getPhoneNumber());
 
         if (updateProfileDto.getJobRoleId() != null) {
@@ -114,7 +122,6 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new IllegalArgumentException("Job Role not found"));
             user.setJobRole(jobRole);
         }
-
         return userRepository.save(user);
     }
 

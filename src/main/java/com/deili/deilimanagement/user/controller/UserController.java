@@ -10,6 +10,9 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
+import java.util.List;
+import java.util.Optional;
+
 @Controller
 @RequiredArgsConstructor
 public class UserController {
@@ -24,6 +27,21 @@ public class UserController {
     @QueryMapping
     public UserProfileDto getUserProfile(@Argument Long userId) {
         return userService.getUserProfile(userId);
+    }
+
+    @QueryMapping
+    public Optional<User> getFindByEmail(@Argument String email) {
+        return userService.findByEmail(email);
+    }
+
+    @QueryMapping
+    public List<User> getSearchUserByEmail(@Argument String email) {
+        return userService.searchUserByEmail(email);
+    }
+
+    @QueryMapping
+    public List<?> getAllUser(){
+        return userService.getAllUser();
     }
 
     @MutationMapping

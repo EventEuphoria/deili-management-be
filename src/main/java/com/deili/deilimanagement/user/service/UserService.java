@@ -5,10 +5,13 @@ import com.deili.deilimanagement.user.dto.UpdateProfileDto;
 import com.deili.deilimanagement.user.dto.UserProfileDto;
 import com.deili.deilimanagement.user.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
     Optional<User> findByEmail(String email);
+    List<User> searchUserByEmail(String email);
+    List<User> getAllUser();
     User registerUser(RegistrationRequest request);
     UserProfileDto getUserProfile(Long userId);
     User updateUserProfile(UpdateProfileDto updateProfileDto);

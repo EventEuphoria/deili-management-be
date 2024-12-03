@@ -1,6 +1,9 @@
 type Query {
     # USER QUERY
     getUserProfile(userId: ID!): UserProfile
+    getFindEmail(email: String): User
+    getSearchUserByEmail(email: String): [User]
+    getAllUser: [User]
     getAllDepartments: [Department]
     getDepartmentById(id: ID!): Department
     getAllRoles: [JobRole]

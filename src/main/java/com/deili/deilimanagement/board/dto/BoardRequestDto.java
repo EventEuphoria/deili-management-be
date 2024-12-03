@@ -8,6 +8,6 @@ import java.util.List;
 public class BoardRequestDto {
     private String boardName;
     private String boardDesc;
-    private Boolean isComplete;
+    private boolean isComplete;
     private Long userId;
 }

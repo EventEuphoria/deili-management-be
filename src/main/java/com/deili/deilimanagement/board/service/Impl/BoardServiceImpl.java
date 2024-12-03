@@ -9,6 +9,9 @@ import com.deili.deilimanagement.board.entity.enums.BoardRole;
 import com.deili.deilimanagement.board.entity.enums.InvitationStatus;
 import com.deili.deilimanagement.board.repository.BoardRepository;
 import com.deili.deilimanagement.board.service.BoardService;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import com.deili.deilimanagement.exception.ResourceNotFoundException;
 import com.deili.deilimanagement.user.entity.User;
 import com.deili.deilimanagement.user.repository.UserRepository;
@@ -25,6 +28,8 @@ import java.util.stream.Collectors;
 public class BoardServiceImpl implements BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    private final JavaMailSender mailSender;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public BoardDto createBoard(BoardRequestDto boardRequestDTO) {
@@ -34,7 +39,7 @@ public class BoardServiceImpl implements BoardService {
         Board board = new Board();
         board.setBoardName(boardRequestDTO.getBoardName());
         board.setBoardDesc(boardRequestDTO.getBoardDesc());
-        board.setComplete(boardRequestDTO.getIsComplete());
+        board.setComplete(boardRequestDTO.isComplete());
         board.setUser(user);
         board.setRole(BoardRole.OWNER);
 
@@ -57,17 +62,11 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found with id " + id));
 
-        if (boardRequestDTO.getBoardName() != null) {
-            board.setBoardName(boardRequestDTO.getBoardName());
-        }
+        if (boardRequestDTO.getBoardName() != null) board.setBoardName(boardRequestDTO.getBoardName());
 
-        if (boardRequestDTO.getBoardDesc() != null) {
-            board.setBoardDesc(boardRequestDTO.getBoardDesc());
-        }
+        if (boardRequestDTO.getBoardDesc() != null) board.setBoardDesc(boardRequestDTO.getBoardDesc());
 
-        if (boardRequestDTO.getIsComplete() != board.isComplete()) {
-            board.setComplete(boardRequestDTO.getIsComplete());
-        }
+        if (boardRequestDTO.isComplete() != board.isComplete()) board.setComplete(boardRequestDTO.isComplete());
         boardRepository.save(board);
         return mapToDTO(board);
     }
@@ -98,25 +97,7 @@ public class BoardServiceImpl implements BoardService {
     public List<BoardDto> getBoardByUser(Long userId){
         List<Board> boards = boardRepository.findByUserId(userId);
 
-        return boards.stream().map(board -> {
-            BoardDto boardDto = new BoardDto();
-            boardDto.setId(board.getId());
-            boardDto.setBoardName(board.getBoardName());
-            boardDto.setBoardDesc(board.getBoardDesc());
-            boardDto.setComplete(board.isComplete());
-            List<AssigneeDto> assigneeDtos = board.getBoardAssignees().stream().map(assignee -> {
-                AssigneeDto assigneeDto = new AssigneeDto();
-                assigneeDto.setUserId(assignee.getUser().getId());
-                assigneeDto.setUserName(assignee.getUser().getFirstName() + " " + assignee.getUser().getLastName());
-                assigneeDto.setRole(assignee.getRole());
-                assigneeDto.setEmail(assignee.getUser().getEmail());
-                assigneeDto.setStatus(assignee.getStatus());
-                return assigneeDto;
-            }).collect(Collectors.toList());
-            boardDto.setAssignees(assigneeDtos);
-
-            return boardDto;
-        }).collect(Collectors.toList());
+        return boards.stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -132,12 +113,23 @@ public class BoardServiceImpl implements BoardService {
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found with id " + boardId));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + userId));
-
         boolean isAlreadyAssignee = board.getBoardAssignees().stream()
-                .anyMatch(boardAssignee -> boardAssignee.getUser().getId().equals(userId));
-
+                .anyMatch(boardAssignee -> boardAssignee.getUser().getId().equals(userId) && boardAssignee.getStatus() == InvitationStatus.ACCEPTED);
         if (isAlreadyAssignee) {
-            throw new IllegalArgumentException("User is already an assignee on this board");
+            throw new IllegalArgumentException("User is already an assignee on this board with an accepted invitation");
+        }
+        Optional<BoardAssignee> existingAssignee = board.getBoardAssignees().stream()
+                .filter(boardAssignee -> boardAssignee.getUser().getId().equals(userId))
+                .findFirst();
+        if (existingAssignee.isPresent()) {
+            BoardAssignee assignee = existingAssignee.get();
+            if (assignee.getStatus() == InvitationStatus.REJECTED) {
+                assignee.setStatus(InvitationStatus.PENDING);
+                assignee.setRole(role);
+                boardRepository.save(board);
+                sendInvitationEmail(user.getEmail(), board.getBoardName(), "http://localhost:3000/notification");
+                return;
+            }
         }
 
         BoardAssignee assignee = new BoardAssignee();
@@ -148,6 +140,17 @@ public class BoardServiceImpl implements BoardService {
 
         board.getBoardAssignees().add(assignee);
         boardRepository.save(board);
+        sendInvitationEmail(user.getEmail(), board.getBoardName(), "http://localhost:3000/notification");
+    }
+
+    private void sendInvitationEmail(String recipientEmail, String boardName, String notificationLink) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(recipientEmail);
+        message.setSubject("Project Board Invitation");
+        message.setText("You have been invited to join the board: " + boardName + ".\n" +
+                "You can accept or reject the invitation by check your notification or clicking the link below:\n" +
+                notificationLink);
+        mailSender.send(message);
     }
 
     @Override
@@ -159,15 +162,13 @@ public class BoardServiceImpl implements BoardService {
                 .filter(a -> a.getUser().getId().equals(userId))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("No pending invitation found for this user"));
-        if (assignee.getStatus() != InvitationStatus.PENDING) {
-            throw new IllegalArgumentException("Invitation has already been responded to");
-        }
+        if (assignee.getStatus() != InvitationStatus.PENDING) throw new IllegalArgumentException("Invitation has already been responded to");
+
         if (accept) {
             assignee.setStatus(InvitationStatus.ACCEPTED);
         } else {
             assignee.setStatus(InvitationStatus.REJECTED);
         }
-
         boardRepository.save(board);
     }
 
