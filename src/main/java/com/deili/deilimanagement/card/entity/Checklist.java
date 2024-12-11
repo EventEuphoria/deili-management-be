@@ -12,8 +12,8 @@ public class Checklist {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "card_id", nullable = false)
+    @OneToOne
+    @JoinColumn(name = "card_id", unique = true)
     private Card card;
 
     @OneToMany(mappedBy = "checklist", cascade = CascadeType.ALL, orphanRemoval = true)

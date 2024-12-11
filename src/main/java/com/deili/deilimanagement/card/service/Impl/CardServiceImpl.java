@@ -1,6 +1,7 @@
 package com.deili.deilimanagement.card.service.Impl;
 
 import com.deili.deilimanagement.card.dto.CardDto;
+import com.deili.deilimanagement.card.dto.CardInput;
 import com.deili.deilimanagement.card.entity.Card;
 import com.deili.deilimanagement.card.repository.CardRepository;
 import com.deili.deilimanagement.card.service.CardService;
@@ -22,25 +23,34 @@ public class CardServiceImpl implements CardService {
     private final LaneRepository laneRepository;
 
     @Override
-    public CardDto createCard(CardDto cardDto) {
-        Lane lane = laneRepository.findById(cardDto.getLaneId())
-                .orElseThrow(() -> new ResourceNotFoundException("Lane not found by id "+cardDto.getLaneId()));
+    public CardDto createCard(CardInput cardInput) {
+        Lane lane = laneRepository.findById(cardInput.getLaneId())
+                .orElseThrow(() -> new ResourceNotFoundException("Lane not found by id " + cardInput.getLaneId()));
         Card card = new Card();
-        card.setCardName(cardDto.getCardName());
-        card.setLane(lane);
-        card.setPosition((long) lane.getCard().size());
+        card.setCardName(cardInput.getCardName());
+        if (cardInput.getCardDesc() != null) {
+            card.setCardDesc(cardInput.getCardDesc());
+        }
+        int maxPosition = lane.getCard().stream()
+                .mapToInt(Card::getPosition)
+                .max()
+                .orElse(-1);
+        lane.setPosition(maxPosition + 1);
 
+        card.setLane(lane);
         cardRepository.save(card);
         return mapToDto(card);
     }
 
+
     @Override
-    public CardDto updateCard(Long cardId, CardDto cardDto) {
+    public CardDto updateCard(Long cardId, CardInput cardInput) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with id "+cardId));
-        if (cardDto.getCardName() != null && !cardDto.getCardName().isEmpty()) card.setCardName(cardDto.getCardName());
-        if (cardDto.getCardDesc() != null && !cardDto.getCardDesc().isEmpty()) card.setCardDesc(cardDto.getCardDesc());
+        if (cardInput.getCardName() != null && !cardInput.getCardName().isEmpty()) card.setCardName(cardInput.getCardName());
+        if (cardInput.getCardDesc() != null && !cardInput.getCardDesc().isEmpty()) card.setCardDesc(cardInput.getCardDesc());
         cardRepository.save(card);
+        card.setId(card.getId());
         return mapToDto(card);
     }
 
@@ -98,7 +108,7 @@ public class CardServiceImpl implements CardService {
             if (card == null) {
                 throw new IllegalArgumentException("Invalid card ID: " + cardId);
             }
-            card.setPosition((long) i);
+            card.setPosition(i);
         }
 
         cardRepository.saveAll(cards);
@@ -107,7 +117,7 @@ public class CardServiceImpl implements CardService {
 
 
     @Override
-    public boolean moveCardToLane(Long cardId, Long targetLaneId, Long newPosition) {
+    public boolean moveCardToLane(Long cardId, Long targetLaneId, int newPosition) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID " + cardId));
         Lane targetLane = laneRepository.findById(targetLaneId)

@@ -23,20 +23,20 @@ public class Card {
 
     private LocalDateTime dueDate;
 
-    private Long position;
+    private int position;
 
     @ManyToOne
     @JoinColumn(name = "lane_id", nullable = false)
     @JsonBackReference
     private Lane lane;
 
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Label> label;
+    private Label label;
 
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Checklist> checklists;
+    private Checklist checklist;
 
     @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

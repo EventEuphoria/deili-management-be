@@ -22,6 +22,7 @@ public class CardContentServiceImpl implements CardContentService {
     private final UserRepository userRepository;
     private final CardAssigneeRepository cardAssigneeRepository;
     private final LabelRepository labelRepository;
+    private final LabelItemRepository labelItemRepository;
     private final ChecklistRepository checklistRepository;
     private final ChecklistItemRepository checklistItemRepository;
     private final BoardAssigneeRepository boardAssigneeRepository;
@@ -80,35 +81,41 @@ public class CardContentServiceImpl implements CardContentService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
 
-        Label label = new Label();
-        label.setCard(card);
+        List<Label> existingLabels = labelRepository.findByCardId(cardId);
+        Label label;
+        if (existingLabels.isEmpty()) {
+            label = new Label();
+            label.setCard(card);
+            labelRepository.save(label);
+        } else {
+            label = existingLabels.get(0);
+        }
 
         LabelItem labelItem = new LabelItem();
         labelItem.setLabel(label);
         labelItem.setLabelName(labelName);
-        label.getLabelItems().add(labelItem);
 
+        label.getLabelItems().add(labelItem);
         labelRepository.save(label);
+
         return mapToLabelDto(label);
     }
 
     @Override
     public void removeLabel(Long labelId) {
-        Label label = labelRepository.findById(labelId)
+        LabelItem label = labelItemRepository.findById(labelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Label not found with ID: " + labelId));
-        labelRepository.delete(label);
+        labelItemRepository.delete(label);
     }
 
     @Override
     public LabelDto updateLabel(Long labelId, String labelName) {
-        Label label = labelRepository.findById(labelId)
+        LabelItem label = labelItemRepository.findById(labelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Label not found with ID: " + labelId));
 
-        if (!label.getLabelItems().isEmpty()) {
-            label.getLabelItems().get(0).setLabelName(labelName);
-        }
-        labelRepository.save(label);
-        return mapToLabelDto(label);
+        if (!label.getLabelName().isEmpty()) label.setLabelName(labelName);
+        labelItemRepository.save(label);
+        return mapToLabelDto(label.getLabel());
     }
 
     @Override
@@ -125,25 +132,29 @@ public class CardContentServiceImpl implements CardContentService {
                 .collect(Collectors.toList());
     }
 
-    // Checklist Methods
     @Override
-    @Transactional
-    public ChecklistDto addChecklistToCard(Long cardId) {
-        Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
-
-        Checklist checklist = new Checklist();
-        checklist.setCard(card);
-        checklistRepository.save(checklist);
-
-        return mapToChecklistDto(checklist);
+    public LabelDto getLabelItemsById(Long labelItemId){
+        LabelItem labelItem = labelItemRepository.findById(labelItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Label Item is not found with ID: " + labelItemId));
+        return mapToLabelDto(labelItem.getLabel());
     }
 
     @Override
     @Transactional
-    public ChecklistItemDto addChecklistItem(Long checklistId, String content) {
-        Checklist checklist = checklistRepository.findById(checklistId)
-                .orElseThrow(() -> new ResourceNotFoundException("Checklist not found with ID: " + checklistId));
+    public ChecklistItemDto addChecklistItem(Long cardId, String content) {
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with ID: " + cardId));
+
+        List<Checklist> existingChecklist = checklistRepository.findByCardId(cardId);
+
+        Checklist checklist;
+        if (existingChecklist.isEmpty()) {
+            checklist = new Checklist();
+            checklist.setCard(card);
+            checklistRepository.save(checklist);
+        } else {
+            checklist = existingChecklist.get(0);
+        }
 
         ChecklistItem checklistItem = new ChecklistItem();
         checklistItem.setChecklist(checklist);
@@ -151,18 +162,28 @@ public class CardContentServiceImpl implements CardContentService {
         checklistItem.setStatus(false);
 
         checklistItemRepository.save(checklistItem);
+
         return mapToChecklistItemDto(checklistItem);
     }
 
     @Override
     @Transactional
-    public ChecklistItemDto updateChecklistItem(Long checklistItemId, String content, boolean status) {
+    public ChecklistItemDto updateChecklistItem(Long checklistItemId, String content) {
         ChecklistItem checklistItem = checklistItemRepository.findById(checklistItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Checklist item not found with ID: " + checklistItemId));
 
-        checklistItem.setContent(content);
-        checklistItem.setStatus(status);
+        if(!checklistItem.getContent().isEmpty()) checklistItem.setContent(content);
 
+        checklistItemRepository.save(checklistItem);
+        return mapToChecklistItemDto(checklistItem);
+    }
+
+    @Override
+    public ChecklistItemDto toggleChecklistItem(Long checklistItemId){
+        ChecklistItem checklistItem = checklistItemRepository.findById(checklistItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Checklist item not found with id "+checklistItemId));
+
+        checklistItem.setStatus(!checklistItem.isStatus());
         checklistItemRepository.save(checklistItem);
         return mapToChecklistItemDto(checklistItem);
     }
@@ -201,8 +222,7 @@ public class CardContentServiceImpl implements CardContentService {
                 cardAssignee.getId(),
                 cardAssignee.getCard().getId(),
                 cardAssignee.getUser().getId(),
-                cardAssignee.getUser().getFirstName(),
-                cardAssignee.getUser().getLastName(),
+                cardAssignee.getUser().getFirstName() + " "+cardAssignee.getUser().getLastName(),
                 cardAssignee.getUser().getEmail(),
                 cardAssignee.getUser().getJobRole().getTitle()
         );

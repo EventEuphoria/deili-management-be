@@ -18,6 +18,7 @@ type AssigneeDTO {
     role: BoardRole!
     email: String!
     status: InvitationStatus!
+    jobRole: JobRole
 }
 
 input BoardRequestDTO {

@@ -220,6 +220,7 @@ public class BoardServiceImpl implements BoardService {
                     assigneeDto.setUserName(assignee.getUser().getFirstName() + " " + assignee.getUser().getLastName());
                     assigneeDto.setRole(assignee.getRole());
                     assigneeDto.setEmail(assignee.getUser().getEmail());
+                    assigneeDto.setJobRole(assignee.getUser().getJobRole());
                     assigneeDto.setStatus(assignee.getStatus() != null ? assignee.getStatus() : InvitationStatus.PENDING);
                     return assigneeDto;
                 })

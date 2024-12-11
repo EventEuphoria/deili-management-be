@@ -3,6 +3,7 @@ package com.deili.deilimanagement.card.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -13,10 +14,10 @@ public class Label {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "card_id") // Foreign key to Card
+    @OneToOne
+    @JoinColumn(name = "card_id", unique = true) // One-to-One relationship
     private Card card;
 
     @OneToMany(mappedBy = "label", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LabelItem> labelItems;
+    private List<LabelItem> labelItems = new ArrayList<>();
 }

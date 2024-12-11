@@ -5,6 +5,7 @@ import com.deili.deilimanagement.card.service.CardContentService;
 import com.deili.deilimanagement.card.service.CardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cglib.core.Local;
+import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
@@ -25,127 +26,127 @@ public class CardController {
     }
 
     @QueryMapping
-    public CardDto getCardById(Long cardId){
+    public CardDto getCardById(@Argument Long cardId){
         return cardService.getCardById(cardId);
     }
 
     @QueryMapping
-    public List<CardDto> getCardsByLane(Long laneId){
+    public List<CardDto> getCardsByLane(@Argument Long laneId){
         return cardService.getCardsByLane(laneId);
     }
 
     @MutationMapping
-    public CardDto createCard(CardDto cardDto){
-        return cardService.createCard(cardDto);
+    public CardDto createCard(@Argument CardInput cardInput){
+        return cardService.createCard(cardInput);
     }
 
     @MutationMapping
-    public CardDto updateCard(Long cardId, CardDto cardDto){
-        return cardService.updateCard(cardId, cardDto);
+    public CardDto updateCard(@Argument Long cardId, @Argument CardInput cardInput){
+        return cardService.updateCard(cardId, cardInput);
     }
 
     @MutationMapping
-    public CardDto updateDueDate(Long cardId, String dueDate){
+    public CardDto updateDueDate(@Argument Long cardId, @Argument String dueDate){
         return cardService.updateDueDate(cardId, LocalDateTime.parse(dueDate));
     }
 
     @MutationMapping
-    public boolean deleteCard(Long cardId){
+    public boolean deleteCard(@Argument Long cardId){
         cardService.deleteCard(cardId);
         return true;
     }
 
     @MutationMapping
-    public boolean reorderCardsInlane(Long laneId, List<Long> cardIds){
+    public boolean reorderCardsInlane(@Argument Long laneId, @Argument List<Long> cardIds){
         return cardService.reorderCardsInLane(laneId, cardIds);
     }
 
     @MutationMapping
-    public boolean moveCardToLane(Long cardId, Long targetLaneId, Long newPosition){
+    public boolean moveCardToLane(@Argument Long cardId, @Argument Long targetLaneId, @Argument int newPosition){
         return cardService.moveCardToLane(cardId, targetLaneId, newPosition);
     }
 
     // CARD CONTENT
     @MutationMapping
-    public CardAssigneeDto addAssigneeToCard(Long cardId, Long userId) {
+    public CardAssigneeDto addAssigneeToCard(@Argument Long cardId, @Argument Long userId) {
         return cardContentService.addAssigneeToCard(cardId, userId);
     }
 
     @MutationMapping
-    public boolean removeAssigneeFromCard(Long cardAssigneeId) {
+    public boolean removeAssigneeFromCard(@Argument Long cardAssigneeId) {
         cardContentService.removeAssigneeFromCard(cardAssigneeId);
         return true;
     }
 
     @QueryMapping
-    public List<CardAssigneeDto> getAssigneesByCard(Long cardId) {
+    public List<CardAssigneeDto> getAssigneesByCard(@Argument Long cardId) {
         return cardContentService.getAssigneesByCard(cardId);
     }
 
     @QueryMapping
-    public CardAssigneeDto getAssigneeById(Long assigneeId) {
+    public CardAssigneeDto getAssigneeById(@Argument Long assigneeId) {
         return cardContentService.getAssigneeById(assigneeId);
     }
 
     @MutationMapping
-    public LabelDto addLabelToCard(Long cardId, String labelName) {
+    public LabelDto addLabelToCard(@Argument Long cardId, @Argument String labelName) {
         return cardContentService.addLabelToCard(cardId, labelName);
     }
 
     @MutationMapping
-    public boolean removeLabel(Long labelId) {
+    public boolean removeLabel(@Argument Long labelId) {
         cardContentService.removeLabel(labelId);
         return true;
     }
 
     @MutationMapping
-    public LabelDto updateLabel(Long labelId, String labelName) {
+    public LabelDto updateLabel(@Argument Long labelId, @Argument String labelName) {
         return cardContentService.updateLabel(labelId, labelName);
     }
 
     @QueryMapping
-    public LabelDto getLabelById(Long labelId) {
+    public LabelDto getLabelById(@Argument Long labelId) {
         return cardContentService.getLabelById(labelId);
     }
 
     @QueryMapping
-    public List<LabelDto> getLabelsByCard(Long cardId) {
+    public List<LabelDto> getLabelsByCard(@Argument Long cardId) {
         return cardContentService.getLabelsByCard(cardId);
     }
 
     @MutationMapping
-    public ChecklistDto addChecklistToCard(Long cardId) {
-        return cardContentService.addChecklistToCard(cardId);
+    public ChecklistItemDto addChecklistItem(@Argument Long cardId, @Argument String content) {
+        return cardContentService.addChecklistItem(cardId, content);
     }
 
     @MutationMapping
-    public ChecklistItemDto addChecklistItem(Long checklistId, String content) {
-        return cardContentService.addChecklistItem(checklistId, content);
+    public ChecklistItemDto updateChecklistItem(@Argument Long checklistItemId, @Argument String content) {
+        return cardContentService.updateChecklistItem(checklistItemId, content);
     }
 
     @MutationMapping
-    public ChecklistItemDto updateChecklistItem(Long checklistItemId, String content, boolean status) {
-        return cardContentService.updateChecklistItem(checklistItemId, content, status);
+    public ChecklistItemDto toggleChecklistItem(@Argument Long checklistItemId){
+        return cardContentService.toggleChecklistItem(checklistItemId);
     }
 
     @MutationMapping
-    public boolean removeChecklistItem(Long checklistItemId) {
+    public boolean removeChecklistItem(@Argument Long checklistItemId) {
         cardContentService.removeChecklistItem(checklistItemId);
         return true;
     }
 
     @QueryMapping
-    public ChecklistDto getChecklistById(Long checklistId) {
+    public ChecklistDto getChecklistById(@Argument Long checklistId) {
         return cardContentService.getChecklistById(checklistId);
     }
 
     @QueryMapping
-    public List<ChecklistDto> getChecklistsByCard(Long cardId) {
+    public List<ChecklistDto> getChecklistsByCard(@Argument Long cardId) {
         return cardContentService.getChecklistsByCard(cardId);
     }
 
     @QueryMapping
-    public ChecklistItemDto getChecklistItemById(Long checklistItemId) {
+    public ChecklistItemDto getChecklistItemById(@Argument Long checklistItemId) {
         return cardContentService.getChecklistItemById(checklistItemId);
     }
 }

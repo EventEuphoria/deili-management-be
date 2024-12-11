@@ -89,17 +89,17 @@ type Mutation {
     moveCardToLane(cardId: ID!, targetLaneId: ID!, newPosition: Int!): Boolean!
 
     # CARD ASSIGNEE MUTATION
-    addAssigneeToCard(input: CardAssigneeInput!): CardAssigneeDto!
+    addAssigneeToCard(cardId: ID!, userId: ID!): CardAssigneeDto!
     removeAssigneeFromCard(cardAssigneeId: ID!): Boolean!
 
     # LABEL MUTATION
-    addLabelToCard(input: LabelInput!): LabelDto!
-    updateLabel(input: LabelUpdateInput!): LabelDto!
+    addLabelToCard(cardId: ID!, labelName: String!): LabelDto!
+    updateLabel(labelId: ID!, labelName: String!): LabelDto!
     removeLabel(labelId: ID!): Boolean!
 
     # CHECKLIST MUTATION
-    addChecklistToCard(input: ChecklistInput!): ChecklistDto!
-    addChecklistItem(input: ChecklistItemInput!): ChecklistItemDto!
-    updateChecklistItem(input: ChecklistItemUpdateInput!): ChecklistItemDto!
+    addChecklistItem(cardId: ID!, content: String!): ChecklistItemDto!
+    updateChecklistItem(checklistItemId: ID!, content: String!, status: Boolean): ChecklistItemDto!
+    toggleChecklistItem(checklistItemId: ID!): ChecklistItemDto!
     removeChecklistItem(checklistItemId: ID!): Boolean!
 }

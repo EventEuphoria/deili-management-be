@@ -16,11 +16,13 @@ public interface CardContentService {
     LabelDto updateLabel(Long labelId, String labelName);
     LabelDto getLabelById(Long labelId);
     List<LabelDto> getLabelsByCard(Long cardId);
+    LabelDto getLabelItemsById(Long labelItemId);
+
 
     // Checklist
-    ChecklistDto addChecklistToCard(Long cardId);
-    ChecklistItemDto addChecklistItem(Long checklistId, String content);
-    ChecklistItemDto updateChecklistItem(Long checklistItemId, String content, boolean status);
+    ChecklistItemDto addChecklistItem(Long cardId, String content);
+    ChecklistItemDto updateChecklistItem(Long checklistItemId, String content);
+    ChecklistItemDto toggleChecklistItem(Long checklistItemId);
     void removeChecklistItem(Long checklistItemId);
     ChecklistDto getChecklistById(Long checklistId);
     List<ChecklistDto> getChecklistsByCard(Long cardId);

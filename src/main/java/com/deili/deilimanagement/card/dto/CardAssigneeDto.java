@@ -11,8 +11,7 @@ public class CardAssigneeDto {
     private Long id;
     private Long cardId;
     private Long userId;
-    private String firstName;
-    private String lastName;
+    private String username;
     private String email;
     private String jobRole;
 }

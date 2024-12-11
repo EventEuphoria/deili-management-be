@@ -7,7 +7,7 @@ type CardDto{
     laneId: ID!
 }
 
-input CardInput{
+input CardInput {
     cardName: String!
     cardDesc: String
     laneId: ID!
@@ -18,15 +18,9 @@ type CardAssigneeDto {
     id: ID!
     cardId: ID!
     userId: ID!
-    firstName: String!
-    lastName: String!
+    username: String!
     email: String!
     jobRole: String!
-}
-
-input CardAssigneeInput {
-    cardId: ID!
-    userId: ID!
 }
 
 # Label Types and Inputs
@@ -38,16 +32,6 @@ type LabelDto {
 
 type LabelItemDto {
     id: ID!
-    labelName: String!
-}
-
-input LabelInput {
-    cardId: ID!
-    labelName: String!
-}
-
-input LabelUpdateInput {
-    labelId: ID!
     labelName: String!
 }
 
