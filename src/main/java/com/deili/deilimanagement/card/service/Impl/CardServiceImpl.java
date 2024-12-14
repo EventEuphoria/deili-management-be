@@ -31,17 +31,30 @@ public class CardServiceImpl implements CardService {
         if (cardInput.getCardDesc() != null) {
             card.setCardDesc(cardInput.getCardDesc());
         }
+
         int maxPosition = lane.getCard().stream()
                 .mapToInt(Card::getPosition)
                 .max()
-                .orElse(-1);
-        lane.setPosition(maxPosition + 1);
+                .orElse(0);
+        int newPosition = maxPosition + 1;
 
+        boolean positionConflict = true;
+        while (positionConflict) {
+            positionConflict = false;
+            for (Card existingCard : lane.getCard()) {
+                if (existingCard.getPosition() == newPosition) {
+                    positionConflict = true;
+                    newPosition++;
+                    break;
+                }
+            }
+        }
+
+        card.setPosition(newPosition);
         card.setLane(lane);
         cardRepository.save(card);
         return mapToDto(card);
     }
-
 
     @Override
     public CardDto updateCard(Long cardId, CardInput cardInput) {

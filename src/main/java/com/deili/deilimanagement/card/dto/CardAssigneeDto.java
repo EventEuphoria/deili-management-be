@@ -1,5 +1,6 @@
 package com.deili.deilimanagement.card.dto;
 
+import com.deili.deilimanagement.user.entity.JobRole;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,5 +14,5 @@ public class CardAssigneeDto {
     private Long userId;
     private String username;
     private String email;
-    private String jobRole;
+    private JobRole jobRole;
 }

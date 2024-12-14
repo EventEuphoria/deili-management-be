@@ -224,7 +224,7 @@ public class CardContentServiceImpl implements CardContentService {
                 cardAssignee.getUser().getId(),
                 cardAssignee.getUser().getFirstName() + " "+cardAssignee.getUser().getLastName(),
                 cardAssignee.getUser().getEmail(),
-                cardAssignee.getUser().getJobRole().getTitle()
+                cardAssignee.getUser().getJobRole()
         );
     }
 

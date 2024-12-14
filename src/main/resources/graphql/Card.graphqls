@@ -20,7 +20,7 @@ type CardAssigneeDto {
     userId: ID!
     username: String!
     email: String!
-    jobRole: String!
+    jobRole: JobRole!
 }
 
 # Label Types and Inputs
